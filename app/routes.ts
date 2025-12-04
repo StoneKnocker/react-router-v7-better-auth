@@ -46,12 +46,15 @@ export default [
 
   // Image routes
   route("images/*", "routes/images.ts"),
+  route("/signin", "routes/pages/signin.tsx"),
 
   // Better Auth and other API routes
   ...prefix("api", [
     route("auth/error", "routes/api/better-error.tsx"),
-    route("auth/*", "routes/api/better.tsx"),
+    // route("auth/*", "routes/api/better.tsx"),
     route("color-scheme", "routes/api/color-scheme.ts"),
+    route("/locales/:lng/:ns", "routes/api/locales.ts"),
+    route("/auth/*", "routes/api/auth.ts"),
   ]),
 
   // Not found

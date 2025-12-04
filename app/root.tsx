@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   data,
   Links,
@@ -20,7 +21,14 @@ import {
 import { parseColorScheme } from "./lib/color-scheme/server";
 import { getPublicEnv } from "./lib/env.server";
 import { requestMiddleware } from "./lib/http.server";
+import {
+  getLocale,
+  i18nextMiddleware,
+  localeCookie,
+} from "./middleware/i18next";
 import stylesheet from "./styles/app.css?url";
+
+export const middleware = [i18nextMiddleware];
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -39,22 +47,25 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const locale = getLocale(context);
+
   await requestMiddleware(request);
   const colorScheme = await parseColorScheme(request);
   const { toast, headers } = await getToast(request);
 
-  return data({ ENV: getPublicEnv(), colorScheme, toast }, { headers });
+  return data({ ENV: getPublicEnv(), colorScheme, toast, locale }, { headers });
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const nonce = useNonce();
   const colorScheme = useColorScheme();
+  const { i18n } = useTranslation();
 
   return (
     <html
-      lang="en"
-      className={`${colorScheme === "dark" ? "dark" : ""} touch-manipulation overflow-x-hidden`}
+      lang={i18n.language}
+      dir={i18n.dir(i18n.language)}
       suppressHydrationWarning
     >
       <head>
@@ -80,7 +91,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  const { ENV, toast } = loaderData;
+  const { ENV, toast, locale } = loaderData;
   const nonce = useNonce();
 
   useEffect(() => {
@@ -91,6 +102,11 @@ export default function App({ loaderData }: Route.ComponentProps) {
       notify.success(toast.message);
     }
   }, [toast]);
+
+  const { i18n } = useTranslation();
+  useEffect(() => {
+    if (i18n.language !== locale) i18n.changeLanguage(locale);
+  }, [locale, i18n]);
 
   return (
     <>

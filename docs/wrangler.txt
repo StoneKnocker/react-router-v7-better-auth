@@ -1,0 +1,9 @@
+# 执行 schema.sql 文件
+pnpm wrangler d1 execute aiphotography --local --file=./docs/schema.sql
+
+# 查询
+pnpm wrangler d1 execute codebase --local --command="SELECT * FROM contacts limit 1"
+pnpm wrangler d1 execute codebase --remote --command="SELECT * FROM users order by id desc  limit 10"
+
+# 插入
+pnpm wrangler d1 execute codebase --local --command="INSERT INTO users (id, name, email) VALUES (1, 'John Doe', 'john.doe@example.com')"
